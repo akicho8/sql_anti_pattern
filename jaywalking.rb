@@ -5,22 +5,17 @@ ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":me
 
 ActiveRecord::Schema.define do
   create_table :users do |t|
-    t.string :favorites_ids
-  end
-  create_table :books do |t|
+    t.string :friends_ids
   end
 end
 
 class User < ActiveRecord::Base
-  def favorites
-    Book.find(favorites_ids.scan(/\d+/))
+  def friends
+    User.find(friends_ids.scan(/\d+/))
   end
 end
 
-class Book < ActiveRecord::Base
-end
-
 user = User.create!
-user.favorites_ids = 2.times.collect { Book.create!.id }.join(",")
-user.favorites_ids              # => "1,2"
-user.favorites                  # => [#<Book id: 1>, #<Book id: 2>]
+user.friends_ids = 2.times.collect { User.create!.id }.join(",")
+user.friends_ids # => "2,3"
+user.friends     # => [#<User id: 2, friends_ids: nil>, #<User id: 3, friends_ids: nil>]

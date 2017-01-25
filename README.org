@@ -6,65 +6,51 @@
    | 複数列属性       | 面倒なのでカラムを連番で増やしていく         |
    | 闇雲インデックス | とりあえず、すべてにインデックスを張っとこう |
 
-** 信号無視
+** [[jaywalking.rb][信号無視]]
 
 #+BEGIN_SRC ruby
-require "active_record"
-
-ActiveRecord::Migration.verbose = false
-ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
-
 ActiveRecord::Schema.define do
   create_table :users do |t|
-    t.string :favorites_ids
-  end
-  create_table :books do |t|
+    t.string :friends_ids
   end
 end
 
 class User < ActiveRecord::Base
-  def favorites
-    Book.find(favorites_ids.scan(/\d+/))
+  def friends
+    User.find(friends_ids.scan(/\d+/))
   end
-end
-
-class Book < ActiveRecord::Base
 end
 
 user = User.create!
-user.favorites_ids = 2.times.collect { Book.create!.id }.join(",")
-user.favorites_ids              # => "1,2"
-user.favorites                  # => [#<Book id: 1>, #<Book id: 2>]
+user.friends_ids = 2.times.collect { User.create!.id }.join(",")
+user.friends_ids # => "2,3"
+user.friends     # => [#<User id: 2, friends_ids: nil>, #<User id: 3, friends_ids: nil>]
 #+END_SRC
 
-** 複数列属性
+** [[multi_column_attribute.rb][複数列属性]]
 
 #+BEGIN_SRC ruby
-ActiveRecord::Schema.define do
-  create_table :users do |t|
-    t.string :profile_image1
-    t.string :profile_image2
-    t.string :profile_image3
-  end
+create_table :users do |t|
+  t.string :profile_image1
+  t.string :profile_image2
+  t.string :profile_image3
 end
 #+END_SRC
 
 ** [[index_shotgun.rb][闇雲インデックス]]
 
 #+BEGIN_SRC ruby
-ActiveRecord::Schema.define do
-  create_table :articles do |t|
-    t.string :title
-    t.string :message
-    t.timestamps
+create_table :articles do |t|
+  t.string :title
+  t.string :message
+  t.timestamps
 
-    t.index :id
-    t.index :title
-    t.index :message
-    t.index :created_at
-    t.index :updated_at
-    t.index [:title, :message]
-    t.index [:id, :title, :message, :created_at, :updated_at], :unique => true, :name => :all
-  end
+  t.index :id
+  t.index :title
+  t.index :message
+  t.index :created_at
+  t.index :updated_at
+  t.index [:title, :message]
+  t.index [:id, :title, :message, :created_at, :updated_at], :unique => true, :name => :all
 end
 #+END_SRC
