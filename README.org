@@ -1,10 +1,12 @@
 * SQLアンチパターン覚え書き
 
-   | 名前                      | 概要          |
-   |---------------------------+---------------|
-   | ジェイウォーク (信号無視) | "123,456,789" |
+   | 名前             | 概要                                         |
+   |------------------+----------------------------------------------|
+   | 信号無視         | 1つのカラムにIDを複数格納                    |
+   | 複数列属性       | 面倒なのでカラムを連番で増やしていく         |
+   | 闇雲インデックス | とりあえず、すべてにインデックスを張っとこう |
 
-** ジェイウォーク (信号無視)
+** 信号無視
 
 #+BEGIN_SRC ruby
 require "active_record"
@@ -33,4 +35,36 @@ user = User.create!
 user.favorites_ids = 2.times.collect { Book.create!.id }.join(",")
 user.favorites_ids              # => "1,2"
 user.favorites                  # => [#<Book id: 1>, #<Book id: 2>]
+#+END_SRC
+
+** 複数列属性
+
+#+BEGIN_SRC ruby
+ActiveRecord::Schema.define do
+  create_table :users do |t|
+    t.string :profile_image1
+    t.string :profile_image2
+    t.string :profile_image3
+  end
+end
+#+END_SRC
+
+** [[index_shotgun.rb][闇雲インデックス]]
+
+#+BEGIN_SRC ruby
+ActiveRecord::Schema.define do
+  create_table :articles do |t|
+    t.string :title
+    t.string :message
+    t.timestamps
+
+    t.index :id
+    t.index :title
+    t.index :message
+    t.index :created_at
+    t.index :updated_at
+    t.index [:title, :message]
+    t.index [:id, :title, :message, :created_at, :updated_at], :unique => true, :name => :all
+  end
+end
 #+END_SRC
