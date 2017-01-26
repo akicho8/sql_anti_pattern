@@ -8,6 +8,9 @@
 
 ** [[jaywalking.rb][信号無視]]
 
+#+INCLUDE: "jaywalking.rb" ruby
+#+INCLUDE: "jaywalking.rb" example
+
 #+BEGIN_SRC ruby
 ActiveRecord::Schema.define do
   create_table :users do |t|
