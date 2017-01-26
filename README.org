@@ -5,12 +5,13 @@
    | 信号無視         | 1つのカラムにIDを複数格納                    |
    | 複数列属性       | 面倒なのでカラムを連番で増やしていく         |
    | 闇雲インデックス | とりあえず、すべてにインデックスを張っとこう |
+   | 幻のファイル     | カラムに画像ファイルのパスを格納             |
 
 ** [[jaywalking.rb][信号無視]]
 
-#+INCLUDE: "jaywalking.rb" ruby
-#+INCLUDE: "https://raw.githubusercontent.com/akicho8/sql_anti_pattern/master/jaywalking.rb" ruby
-#+INCLUDE: "jaywalking.rb" example
+# #+INCLUDE: "jaywalking.rb" ruby
+# #+INCLUDE: "https://raw.githubusercontent.com/akicho8/sql_anti_pattern/master/jaywalking.rb" ruby
+# #+INCLUDE: "jaywalking.rb" example
 
 #+BEGIN_SRC ruby
 ActiveRecord::Schema.define do
@@ -57,4 +58,16 @@ create_table :articles do |t|
   t.index [:title, :message]
   t.index [:id, :title, :message, :created_at, :updated_at], :unique => true, :name => :all
 end
+#+END_SRC
+
+** [[phantom_files.rb][幻のファイル]]
+
+#+BEGIN_SRC ruby
+ActiveRecord::Schema.define do
+  create_table :users do |t|
+    t.string :profile_image_path
+  end
+end
+
+user = User.create!(:profile_image_path => "path/to/profile.png") # => #<User id: 1, profile_image_path: "path/to/profile.png">
 #+END_SRC
