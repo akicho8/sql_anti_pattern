@@ -9,6 +9,7 @@
 ** [[jaywalking.rb][信号無視]]
 
 #+INCLUDE: "jaywalking.rb" ruby
+#+INCLUDE: "https://raw.githubusercontent.com/akicho8/sql_anti_pattern/master/jaywalking.rb" ruby
 #+INCLUDE: "jaywalking.rb" example
 
 #+BEGIN_SRC ruby
