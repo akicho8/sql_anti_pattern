@@ -1,11 +1,12 @@
 * SQLアンチパターン覚え書き
 
-   | 名前             | 概要                                         |
-   |------------------+----------------------------------------------|
-   | 信号無視         | 1つのカラムにIDを複数格納                    |
-   | 複数列属性       | 面倒なのでカラムを連番で増やしていく         |
-   | 闇雲インデックス | とりあえず、すべてにインデックスを張っとこう |
-   | 幻のファイル     | カラムに画像ファイルのパスを格納             |
+   | 名前                   | 概要                                         |
+   |------------------------+----------------------------------------------|
+   | 信号無視               | 1つのカラムにIDを複数格納                    |
+   | 複数列属性             | 面倒なのでカラムを連番で増やしていく         |
+   | 闇雲インデックス       | とりあえず、すべてにインデックスを張っとこう |
+   | 幻のファイル           | カラムに画像ファイルのパスを格納             |
+   | 読み取り可能パスワード | パスワードをそのまま格納                     |
 
 ** [[jaywalking.rb][信号無視]]
 
@@ -70,4 +71,11 @@ ActiveRecord::Schema.define do
 end
 
 user = User.create!(:profile_image_path => "path/to/profile.png") # => #<User id: 1, profile_image_path: "path/to/profile.png">
+#+END_SRC
+
+** [[readable_passwords.rb][読み取り可能パスワード]]
+
+#+BEGIN_SRC ruby
+user = User.create!(:password => "password")
+user.password_before_type_cast  # => "password"
 #+END_SRC
