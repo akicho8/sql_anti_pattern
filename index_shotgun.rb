@@ -7,17 +7,15 @@ ActiveRecord::Base.establish_connection(ActiveRecord::Base.connection_config.mer
 
 ActiveRecord::Schema.define do
   create_table :articles do |t|
-    t.string :title
+    t.string :name
     t.string :message
     t.timestamps
 
     t.index :id
-    t.index :title
+    t.index :name
     t.index :message
-    t.index :created_at
-    t.index :updated_at
-    t.index [:title, :message]
-    t.index [:id, :title, :message, :created_at, :updated_at], :unique => true, :name => :all
+    t.index [:message, :name]
+    t.index [:id, :message, :name, :created_at, :updated_at], :unique => true, :name => :all
   end
 end
 
@@ -28,10 +26,8 @@ Article.connection.indexes(Article.table_name).each do |e|
   p [e.name, e.columns]
 end
 
-# >> ["all", ["id", "title", "message", "created_at", "updated_at"]]
+# >> ["all", ["id", "message", "name", "created_at", "updated_at"]]
 # >> ["index_articles_on_id", ["id"]]
-# >> ["index_articles_on_title", ["title"]]
+# >> ["index_articles_on_name", ["name"]]
 # >> ["index_articles_on_message", ["message"]]
-# >> ["index_articles_on_created_at", ["created_at"]]
-# >> ["index_articles_on_updated_at", ["updated_at"]]
-# >> ["index_articles_on_title_and_message", ["title", "message"]]
+# >> ["index_articles_on_message_and_name", ["message", "name"]]

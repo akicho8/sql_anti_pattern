@@ -49,18 +49,19 @@ end
 ** [[index_shotgun.rb][闇雲インデックス]]
 
 #+BEGIN_SRC ruby
-create_table :articles do |t|
-  t.string :title
-  t.string :message
-  t.timestamps
+# 張ればいいというもんではない
+ActiveRecord::Schema.define do
+  create_table :articles do |t|
+    t.string :name
+    t.string :message
+    t.timestamps
 
-  t.index :id
-  t.index :title
-  t.index :message
-  t.index :created_at
-  t.index :updated_at
-  t.index [:title, :message]
-  t.index [:id, :title, :message, :created_at, :updated_at], :unique => true, :name => :all
+    t.index :id
+    t.index :name
+    t.index :message
+    t.index [:message, :name]
+    t.index [:id, :message, :name, :created_at, :updated_at], :unique => true, :name => :all
+  end
 end
 #+END_SRC
 
