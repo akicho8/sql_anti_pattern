@@ -1,12 +1,15 @@
 * SQLアンチパターン覚え書き
 
-   | 名前                   | 概要                                         |
-   |------------------------+----------------------------------------------|
-   | 信号無視               | 1つのカラムにIDを複数格納                    |
-   | 複数列属性             | 面倒なのでカラムを連番で増やしていく         |
-   | 闇雲インデックス       | とりあえず、すべてにインデックスを張っとこう |
-   | 幻のファイル           | カラムに画像ファイルのパスを格納             |
-   | 読み取り可能パスワード | パスワードをそのまま格納                     |
+   | 名前                   | 何がダメか                             | 解決方法                   |
+   |------------------------+----------------------------------------+----------------------------|
+   | 信号無視               | 1つのカラムにIDを複数格納              | 中間テーブルを持つ         |
+   | 複数列属性             | 面倒なのでカラムを連番で増やしていく   | 1:多の適切なリレーション   |
+   | 闇雲インデックス       | とりあえず、すべてにインデックスを張る | 絞る                       |
+   | 幻のファイル           | カラムに画像ファイルのパスを格納       | blob                       |
+   | 読み取り可能パスワード | パスワードをそのまま格納               | ハッシュ化                 |
+   | 31のフレーバー         | 限定する値を列定義(enum)で指定         | 別テーブルで管理           |
+   | ランダムセレクション   | order rand()                           | limit 1 offset rand(count) |
+   | 丸め誤差               | float                                  | decimal                    |
 
 ** [[jaywalking.rb][信号無視]]
 
@@ -78,4 +81,45 @@ user = User.create!(:profile_image_path => "path/to/profile.png") # => #<User id
 #+BEGIN_SRC ruby
 user = User.create!(:password => "password")
 user.password_before_type_cast  # => "password"
+#+END_SRC
+
+** [[thirty_one_flavors.rb][31のフレーバー]]
+
+#+BEGIN_SRC ruby
+ActiveRecord::Schema.define do
+  create_table :users do |t|
+    t.column :foo, "ENUM('a', 'b')"
+  end
+end
+
+User.create!(:foo => "a") # => #<User id: 1, foo: "a">
+User.create!(:foo => "b") # => #<User id: 2, foo: "b">
+#+END_SRC
+
+** [[random_selection.rb][ランダムセレクション]]
+
+#+BEGIN_SRC ruby
+# NG
+User.order("random()").take
+
+# GOOD
+User.offset(rand(User.count)).take
+#+END_SRC
+
+** [[rounding_errors.rb][丸め誤差]]
+
+#+BEGIN_SRC ruby
+ActiveRecord::Schema.define do
+  create_table :users do |t|
+    t.column :c1, :float
+    t.column :c2, :double
+    t.column :c3, "DECIMAL(65, 30)"
+  end
+end
+
+v = 5.5555555555555555555555555555555555555
+user = User.create!(:c1 => v, :c2 => v, :c3 => v).reload
+user.c1.to_d # => 0.555556e1
+user.c2.to_d # => 0.555555555555556e1
+user.c3.to_d # => 0.5555555555555555e1
 #+END_SRC
