@@ -19,22 +19,13 @@
 # #+INCLUDE: "jaywalking.rb" example
 
 #+BEGIN_SRC ruby
-ActiveRecord::Schema.define do
-  create_table :users do |t|
-    t.string :friends_ids
-  end
-end
-
-class User < ActiveRecord::Base
-  def friends
-    User.find(friends_ids.scan(/\d+/))
-  end
+create_table :users do |t|
+  t.string :friends_ids
 end
 
 user = User.create!
 user.friends_ids = 2.times.collect { User.create!.id }.join(",")
 user.friends_ids # => "2,3"
-user.friends     # => [#<User id: 2, friends_ids: nil>, #<User id: 3, friends_ids: nil>]
 #+END_SRC
 
 ** [[multi_column_attribute.rb][複数列属性]]
@@ -50,19 +41,11 @@ end
 ** [[index_shotgun.rb][闇雲インデックス]]
 
 #+BEGIN_SRC ruby
-# 張ればいいというもんではない
-ActiveRecord::Schema.define do
-  create_table :articles do |t|
-    t.string :name
-    t.string :message
-    t.timestamps
+create_table :users do |t|
+  t.string :name, :index => true
+  t.timestamps    :index => true
 
-    t.index :id
-    t.index :name
-    t.index :message
-    t.index [:message, :name]
-    t.index [:id, :message, :name, :created_at, :updated_at], :unique => true, :name => :all
-  end
+  t.index [:name, :created_at, :updated_at]
 end
 #+END_SRC
 
@@ -83,10 +66,8 @@ user.password_before_type_cast  # => "foo"
 ** [[thirty_one_flavors.rb][31のフレーバー]]
 
 #+BEGIN_SRC ruby
-ActiveRecord::Schema.define do
-  create_table :users do |t|
-    t.column :foo, "ENUM('a', 'b')"
-  end
+create_table :users do |t|
+  t.column :foo, "ENUM('a', 'b')"
 end
 
 User.create!(:foo => "a") # => #<User id: 1, foo: "a">
@@ -106,12 +87,10 @@ User.offset(rand(User.count)).take
 ** [[rounding_errors.rb][丸め誤差]]
 
 #+BEGIN_SRC ruby
-ActiveRecord::Schema.define do
-  create_table :users do |t|
-    t.column :c1, :float
-    t.column :c2, :double
-    t.column :c3, "DECIMAL(65, 30)"
-  end
+create_table :users do |t|
+  t.column :c1, :float
+  t.column :c2, :double
+  t.column :c3, "DECIMAL(65, 30)"
 end
 
 v = 5.5555555555555555555555555555555555555
