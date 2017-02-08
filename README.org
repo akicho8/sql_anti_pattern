@@ -11,6 +11,7 @@
    | ランダムセレクション   | order rand()                         | limit 1 offset rand(count) |
    | 丸め誤差               | float                                | decimal                    |
    | SQLインジェクション    | where("id = #{params[:id]}")         | where(:id => params[:id])  |
+   | 疑似キー潔癖症         | 欠番を埋めたがる                     | 埋めたがらない             |
 
 ** [[jaywalking.rb][信号無視]]
 
@@ -103,6 +104,18 @@ user.c3.to_d # => 0.5555555555555555e1
 ** [[sql_injection.rb][SQLインジェクション]]
 
 #+BEGIN_SRC ruby
-id = "0 or name = 'admin'"
-User.where("id = #{id}").take   # => #<User id: 2, name: "admin">
+id = "0 or name = 'admin'" User.where("id = #{id}").take # => #<User
+id: 2, name: "admin">
+#+END_SRC
+
+** [[pseudokey_neat_freak][疑似キー潔癖症]]
+
+#+BEGIN_SRC ruby
+User.pluck(:id)                 # => [2, 4]
+# 1から埋めるならもっと面倒なことになる
+id = ActiveRecord::Base.connection.select_value("SELECT id + 1 FROM users WHERE (id + 1) NOT IN (SELECT id FROM users) LIMIT 1")
+id                              # => 3
+# INSERTでidが衝突するかもしれない
+User.create!(:id => id)         # => #<User id: 3>
+User.pluck(:id)                 # => [2, 3, 4]
 #+END_SRC
