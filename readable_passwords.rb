@@ -12,5 +12,5 @@ end
 class User < ActiveRecord::Base
 end
 
-user = User.create!(:password => "password")
-user.password_before_type_cast  # => "password"
+user = User.create!(:password => "foo")
+user.password_before_type_cast  # => "foo"

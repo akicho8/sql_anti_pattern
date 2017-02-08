@@ -69,20 +69,15 @@ end
 ** [[phantom_files.rb][幻のファイル]]
 
 #+BEGIN_SRC ruby
-ActiveRecord::Schema.define do
-  create_table :users do |t|
-    t.string :profile_image_path
-  end
-end
-
-user = User.create!(:profile_image_path => "path/to/profile.png") # => #<User id: 1, profile_image_path: "path/to/profile.png">
+user = User.create!(:file_path => "path/to/file.png")
+Pathname(user.file_path).exist? # => false
 #+END_SRC
 
 ** [[readable_passwords.rb][読み取り可能パスワード]]
 
 #+BEGIN_SRC ruby
-user = User.create!(:password => "password")
-user.password_before_type_cast  # => "password"
+user = User.create!(:password => "foo")
+user.password_before_type_cast  # => "foo"
 #+END_SRC
 
 ** [[thirty_one_flavors.rb][31のフレーバー]]

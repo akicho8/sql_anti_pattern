@@ -5,12 +5,12 @@ ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":me
 
 ActiveRecord::Schema.define do
   create_table :users do |t|
-    t.string :profile_image_path
+    t.string :file_path
   end
 end
 
 class User < ActiveRecord::Base
 end
 
-user = User.create!(:profile_image_path => "path/to/profile.png") # => #<User id: 1, profile_image_path: "path/to/profile.png">
-Pathname(user.profile_image_path).exist?                          # => false
+user = User.create!(:file_path => "path/to/file.png")
+Pathname(user.file_path).exist? # => false
