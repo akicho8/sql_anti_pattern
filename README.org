@@ -104,8 +104,8 @@ user.c3.to_d # => 0.5555555555555555e1
 ** [[sql_injection.rb][SQLインジェクション]]
 
 #+BEGIN_SRC ruby
-id = "0 or name = 'admin'" User.where("id = #{id}").take # => #<User
-id: 2, name: "admin">
+id = "0 or name = 'admin'"
+User.where("id = #{id}").take # => #<User id: 2, name: "admin">
 #+END_SRC
 
 ** [[pseudokey_neat_freak][疑似キー潔癖症]]
