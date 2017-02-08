@@ -113,7 +113,8 @@ User.where("id = #{id}").take # => #<User id: 2, name: "admin">
 #+BEGIN_SRC ruby
 User.pluck(:id)                 # => [2, 4]
 # 1から埋めるならもっと面倒なことになる
-id = ActiveRecord::Base.connection.select_value("SELECT id + 1 FROM users WHERE (id + 1) NOT IN (SELECT id FROM users) LIMIT 1")
+sql = "SELECT id + 1 FROM users WHERE (id + 1) NOT IN (SELECT id FROM users) LIMIT 1"
+id = ActiveRecord::Base.connection.select_value(sql)
 id                              # => 3
 # INSERTでidが衝突するかもしれない
 User.create!(:id => id)         # => #<User id: 3>
