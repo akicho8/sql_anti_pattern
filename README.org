@@ -40,10 +40,10 @@ user.friends     # => [#<User id: 2, friends_ids: nil>, #<User id: 3, friends_id
 ** [[multi_column_attribute.rb][複数列属性]]
 
 #+BEGIN_SRC ruby
-create_table :users do |t|
-  t.string :profile_image1
-  t.string :profile_image2
-  t.string :profile_image3
+create_table :articles do |t|
+  t.string :comment1
+  t.string :comment2
+  t.string :comment3
 end
 #+END_SRC
 
