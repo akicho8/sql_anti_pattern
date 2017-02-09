@@ -13,6 +13,7 @@
    | SQLインジェクション    | where("id = #{params[:id]}")         | where(:id => params[:id])  |
    | 疑似キー潔癖症         | 欠番を埋めたがる                     | 埋めたがらない             |
    | 貧者のサーチエンジン   | like '%foo%'                         | FULLTEXT等                 |
+   | 魔法の豆               | モデルに書かない                     | 書く                       |
 
 ** [[jaywalking.rb][信号無視]]
 
@@ -126,4 +127,12 @@ User.pluck(:id)                 # => [2, 3, 4]
 
 #+BEGIN_SRC ruby
 Article.where(["body like ?", "%日本%"])
+#+END_SRC
+
+** [[magic_beans][魔法の豆]]
+
+#+BEGIN_SRC ruby
+# user.rb が、これだけ。一方で users_controller.rb は1000行ある。
+class User < ActiveRecord::Base
+end
 #+END_SRC
