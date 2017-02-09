@@ -136,3 +136,25 @@ Article.where(["body like ?", "%日本%"])
 class User < ActiveRecord::Base
 end
 #+END_SRC
+
+** [[id_required][とりあえずID]]
+
+Profile#user_id がユニークであれば Profile#id はいらないだろうという考えだと理解した。
+
+#+BEGIN_SRC ruby
+create_table :users do |t|
+end
+
+create_table :profiles, :primary_key => :user_id do |t|
+end
+
+class User < ActiveRecord::Base
+  has_one :profile
+end
+
+class Profile < ActiveRecord::Base
+end
+
+user = User.create!             # => #<User id: 1>
+user.create_profile!            # => #<Profile user_id: 1>
+#+END_SRC
