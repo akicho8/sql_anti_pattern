@@ -12,6 +12,7 @@
    | 丸め誤差               | float                                | decimal                    |
    | SQLインジェクション    | where("id = #{params[:id]}")         | where(:id => params[:id])  |
    | 疑似キー潔癖症         | 欠番を埋めたがる                     | 埋めたがらない             |
+   | 貧者のサーチエンジン   | like '%foo%'                         | FULLTEXT等                 |
 
 ** [[jaywalking.rb][信号無視]]
 
@@ -119,4 +120,10 @@ id                              # => 3
 # INSERTでidが衝突するかもしれない
 User.create!(:id => id)         # => #<User id: 3>
 User.pluck(:id)                 # => [2, 3, 4]
+#+END_SRC
+
+** [[poor_mans_search_engine][貧者のサーチエンジン]]
+
+#+BEGIN_SRC ruby
+Article.where(["body like ?", "%日本%"])
 #+END_SRC
