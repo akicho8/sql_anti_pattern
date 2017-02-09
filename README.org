@@ -1,19 +1,20 @@
 * SQLアンチパターン覚え書き
 
-   | 名前                   | 何がダメか                           | 解決方法                   |
-   |------------------------+--------------------------------------+----------------------------|
-   | 信号無視               | 1つのカラムにIDを複数格納            | 中間テーブルを持つ         |
-   | 複数列属性             | 面倒なのでカラムを連番で増やしていく | 1:多の適切なリレーション   |
-   | 闇雲インデックス       | すべてにインデックスを張る           | 絞る                       |
-   | 幻のファイル           | カラムに画像ファイルのパスを格納     | blob                       |
-   | 読み取り可能パスワード | パスワードをそのまま格納             | ハッシュ化                 |
-   | 31のフレーバー         | 限定する値を列定義(enum)で指定       | 別テーブルで管理           |
-   | ランダムセレクション   | order rand()                         | limit 1 offset rand(count) |
-   | 丸め誤差               | float                                | decimal                    |
-   | SQLインジェクション    | where("id = #{params[:id]}")         | where(:id => params[:id])  |
-   | 疑似キー潔癖症         | 欠番を埋めたがる                     | 埋めたがらない             |
-   | 貧者のサーチエンジン   | like '%foo%'                         | FULLTEXT等                 |
-   | 魔法の豆               | モデルに書かない                     | 書く                       |
+   | 名前                       | 何がダメか                           | 解決方法                   | 備考                             |
+   |----------------------------+--------------------------------------+----------------------------+----------------------------------|
+   | 信号無視                   | 1つのカラムにIDを複数格納            | 中間テーブルを持つ         |                                  |
+   | 複数列属性                 | 面倒なのでカラムを連番で増やしていく | 1:多の適切なリレーション   | xxx2 が出てきたら危険信号        |
+   | 闇雲インデックス           | すべてにインデックスを張る           | 絞る                       |                                  |
+   | 幻のファイル               | カラムに画像ファイルのパスを格納     | blob                       |                                  |
+   | 読み取り可能パスワード     | パスワードをそのまま格納             | ハッシュ化                 | ユーザー毎の「塩」を混ぜるの重要 |
+   | 31のフレーバー             | 限定する値を列定義(enum)で指定       | 別テーブルで管理           |                                  |
+   | ランダムセレクション       | order rand()                         | limit 1 offset rand(count) |                                  |
+   | 丸め誤差                   | float                                | decimal                    | 緯度経度のときに気をつける       |
+   | SQLインジェクション        | where("id = #{params[:id]}")         | where(:id => params[:id])  |                                  |
+   | 疑似キー潔癖症             | 欠番を埋めたがる                     | 埋めたがらない             |                                  |
+   | 貧者のサーチエンジン       | like '%foo%'                         | FULLTEXT等                 |                                  |
+   | 魔法の豆                   | モデルに書かない                     | 書く                       |                                  |
+   | typeにモデル名を入れるアレ | 整合性が揺らぐ・柔軟性がない         | 使わない                   | しかし便利な面も多い             |
 
 ** [[jaywalking.rb][信号無視]]
 
@@ -157,4 +158,41 @@ end
 
 user = User.create!             # => #<User id: 1>
 user.create_profile!            # => #<Profile user_id: 1>
+#+END_SRC
+
+
+** [[polymorphic_associations][typeにモデル名を入れるアレ]]
+
+#+BEGIN_SRC ruby
+create_table :users do |t|
+end
+create_table :comments do |t|
+  t.belongs_to :commentable, polymorphic: true
+end
+
+class User < ActiveRecord::Base
+  has_many :comments, as: :commentable
+end
+
+# あらゆるレコードにコメントできるモデル
+class Comment < ActiveRecord::Base
+  has_many :comments, as: :commentable # 自分に対してもコメントできるようにするため
+  belongs_to :commentable, polymorphic: true
+end
+
+user = User.create!             # => #<User id: 1>
+comment = user.comments.create! # => #<Comment id: 1, commentable_type: "User", commentable_id: 1>
+comment.comments.create!        # => #<Comment id: 2, commentable_type: "Comment", commentable_id: 1>
+comment = user.comments.create! # => #<Comment id: 3, commentable_type: "User", commentable_id: 1>
+comment.comments.create!        # => #<Comment id: 4, commentable_type: "Comment", commentable_id: 3>
+
+tt Comment.all.collect(&:attributes)
+# >> +----+------------------+----------------+
+# >> | id | commentable_type | commentable_id |
+# >> +----+------------------+----------------+
+# >> |  1 | User             |              1 |
+# >> |  2 | Comment          |              1 |
+# >> |  3 | User             |              1 |
+# >> |  4 | Comment          |              3 |
+# >> +----+------------------+----------------+
 #+END_SRC
