@@ -1,16 +1,23 @@
 require "active_record"
+require "rain_table"
+ActiveRecord::Base.include(RainTable::ActiveRecord)
 
-ActiveRecord::Base.logger = ActiveSupport::Logger.new(STDOUT)
+logger = ActiveSupport::Logger.new(STDOUT)
+ActiveRecord::Base.logger = logger
 ActiveSupport::LogSubscriber.colorize_logging = false
 
 ActiveRecord::Migration.verbose = false
+
 ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
 
-ActiveRecord::Schema.define do
-  create_table :users do |t|
-  end
+logger.silence do
+  ActiveRecord::Schema.define do
+    create_table :users do |t|
+    end
 
-  create_table :profiles, :primary_key => :user_id do |t|
+    create_table :profiles, :id => false do |t|
+      t.belongs_to :user, :foreign_key => true # MySQL の場合 foreign_key 制約で Profile.create!(:user_id => 0) が通る心配を排除できる
+    end
   end
 end
 
@@ -19,22 +26,32 @@ class User < ActiveRecord::Base
 end
 
 class Profile < ActiveRecord::Base
-  primary_key                   # => "user_id"
+  self.primary_key = :user_id
+
+  belongs_to :user
 end
 
-user = User.create!             # => #<User id: 1>
-user.create_profile!            # => #<Profile user_id: 1>
-# >>    (0.4ms)  CREATE TABLE "profiles" ("user_id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)
-# >>    (0.1ms)  CREATE TABLE "ar_internal_metadata" ("key" varchar NOT NULL PRIMARY KEY, "value" varchar, "created_at" datetime NOT NULL, "updated_at" datetime NOT NULL)
-# >>   ActiveRecord::InternalMetadata Load (0.1ms)  SELECT  "ar_internal_metadata".* FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? LIMIT ?  [["key", :environment], ["LIMIT", 1]]
-# >>    (0.0ms)  begin transaction
-# >>   SQL (0.1ms)  INSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES (?, ?, ?, ?)  [["key", "environment"], ["value", "default_env"], ["created_at", 2017-02-09 06:27:36 UTC], ["updated_at", 2017-02-09 06:27:36 UTC]]
-# >>    (0.0ms)  commit transaction
-# >>    (0.1ms)  CREATE TABLE "users" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)
+user = User.create!                 # => #<User id: 1>
+user.create_profile!(:user => user) # => #<Profile user_id: 1>
+
+tt User
+tt Profile
+
 # >>    (0.0ms)  begin transaction
 # >>   SQL (0.0ms)  INSERT INTO "users" DEFAULT VALUES
 # >>    (0.0ms)  commit transaction
 # >>    (0.0ms)  begin transaction
-# >>   SQL (0.1ms)  INSERT INTO "profiles" DEFAULT VALUES
+# >>   SQL (0.1ms)  INSERT INTO "profiles" ("user_id") VALUES (?)  [["user_id", 1]]
 # >>    (0.0ms)  commit transaction
-# >>   Profile Load (0.1ms)  SELECT  "profiles".* FROM "profiles" WHERE "profiles"."user_id" = ? LIMIT ?  [["user_id", 1], ["LIMIT", 1]]
+# >>   User Load (0.0ms)  SELECT "users".* FROM "users"
+# >> +----+
+# >> | id |
+# >> +----+
+# >> |  1 |
+# >> +----+
+# >>   Profile Load (0.0ms)  SELECT "profiles".* FROM "profiles"
+# >> +---------+
+# >> | user_id |
+# >> +---------+
+# >> |       1 |
+# >> +---------+

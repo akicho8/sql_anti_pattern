@@ -1,4 +1,4 @@
-* SQLアンチパターン覚え書き
+* 一目で思い出せるSQLアンチパターン覚え書き
 
    | 名前                       | 何がダメか                   | 解決方法                   | 備考                  |
    |----------------------------+------------------------------+----------------------------+-----------------------|
@@ -132,21 +132,20 @@ Article.where(["body like ?", "%日本%"])
 
 ** [[magic_beans][魔法の豆]]
 
+user.rb が、これだけ。一方で users_controller.rb は1000行ある。
+
 #+BEGIN_SRC ruby
-# user.rb が、これだけ。一方で users_controller.rb は1000行ある。
 class User < ActiveRecord::Base
 end
 #+END_SRC
 
 ** [[id_required][とりあえずID]]
 
-Profile#user_id がユニークであれば Profile#id はいらないだろうという考えだと理解した。
+Profile#user_id が一意であれば Profile#id は余計だろうという考えもあることを理解した。
 
 #+BEGIN_SRC ruby
-create_table :users do |t|
-end
-
-create_table :profiles, :primary_key => :user_id do |t|
+create_table :profiles, :id => false do |t|
+  t.belongs_to :user
 end
 
 class User < ActiveRecord::Base
@@ -154,12 +153,13 @@ class User < ActiveRecord::Base
 end
 
 class Profile < ActiveRecord::Base
+  self.primary_key = :user_id
+  belongs_to :user
 end
 
-user = User.create!             # => #<User id: 1>
-user.create_profile!            # => #<Profile user_id: 1>
+user = User.create!                 # => #<User id: 1>
+user.create_profile!(:user => user) # => #<Profile user_id: 1>
 #+END_SRC
-
 
 ** [[polymorphic_associations][typeにモデル名を入れるアレ]]
 
