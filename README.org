@@ -16,6 +16,7 @@
    | 魔法の豆                   | モデルに書かない             | 書く                       |                              |
    | typeにモデル名を入れるアレ | 整合性が揺らぐ・柔軟性がない | 使わない                   | 便利な面も多い               |
    | 外部キー嫌い               | foreign_key: false           | foreign_key: true          | テストで困るけど使っていこう |
+   | メタデータ大増殖           | テーブルを連番にして増やす   | 増やさない                 |                              |
 
 ** [[jaywalking.rb][信号無視]]
 
@@ -213,3 +214,39 @@ Article.create!(:user_id => 0) rescue $! # => #<ActiveRecord::InvalidForeignKey:
 # >>   REFERENCES `users` (`id`)
 # >> ) ENGINE=InnoDB
 #+END_SRC
+
+** [[metadata_tribble.rb][メタデータ大増殖]]
+
+   NG
+
+#+BEGIN_SRC ruby
+(2000...2100).each do |year|
+  create_table "users_#{year}" do |t|
+  end
+end
+
+User.table_name = :users_2016
+User.create!                    # => #<User id: 1>
+
+User.table_name = :users_2017
+User.create!                    # => #<User id: 1>
+#+END_SRC
+
+   速度が問題なら次のようにパーティション分割する。ただ ActiveRecord 経由でこの処理を書こうとするととても大変。
+
+#+BEGIN_SRC sql
+CREATE TABLE users (
+ id INTEGER AUTO_INCREMENT NOT NULL,
+ created_at DATETIME,
+ PRIMARY KEY (id, created_at)
+);
+
+ALTER TABLE users PARTITION BY HASH (YEAR(created_at)) PARTITIONS 3;
+EXPLAIN PARTITIONS SELECT * FROM users;
+#+END_SRC
+
+|----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------------|
+| id | select_type | table | partitions | type  | possible_keys | key     | key_len | ref  | rows | filtered | Extra       |
+|----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------------|
+|  1 | SIMPLE      | users | p0,p1,p2   | index | NULL          | PRIMARY |       9 | NULL |    1 |   100.00 | Using index |
+|----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------------|
