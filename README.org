@@ -17,6 +17,9 @@
    | typeにモデル名を入れるアレ | 整合性が揺らぐ・柔軟性がない | 使わない                   | 便利な面も多い               |
    | 外部キー嫌い               | foreign_key: false           | foreign_key: true          | テストで困るけど使っていこう |
    | メタデータ大増殖           | テーブルを連番にして増やす   | 増やさない                 |                              |
+   | 曖昧なグループ             | group by A で select B       | Bが必要な理由を考える      |                              |
+
+   アンチパターンだと決め付けるのではなく一長一短を知ることが大切。
 
 ** [[jaywalking.rb][信号無視]]
 
@@ -232,7 +235,7 @@ User.table_name = :users_2017
 User.create!                    # => #<User id: 1>
 #+END_SRC
 
-   速度が問題なら次のようにパーティション分割する。ただ ActiveRecord 経由でこの処理を書こうとするととても大変。
+   速度が問題なら次のようにパーティション分割する。ただ ActiveRecord 経由でこの処理を書こうとすると大変。
 
 #+BEGIN_SRC sql
 CREATE TABLE users (
@@ -250,3 +253,17 @@ EXPLAIN PARTITIONS SELECT * FROM users;
 |----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------------|
 |  1 | SIMPLE      | users | p0,p1,p2   | index | NULL          | PRIMARY |       9 | NULL |    1 |   100.00 | Using index |
 |----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------------|
+
+** [[ambiguous_groups.rb][曖昧なグループ]]
+
+同じ name のレコードは複数あったかもしれないのに、どうして id が特定できたのか。MAX ではなく AVG を使って集約したと考えてみると、id が特定できた違和感を得やすい。
+
+#+BEGIN_SRC ruby
+sql "SELECT id, AVG(score) FROM users GROUP BY name" # => [{"id"=>2, "AVG(score)"=>1.5}, {"id"=>4, "AVG(score)"=>3.5}]
+#+END_SRC
+
+MySQL の場合はエラーにしてくれる。
+
+#+BEGIN_SRC ruby
+#<ActiveRecord::StatementInvalid: Mysql2::Error: Expression #1 of SELECT list is not in GROUP BY clause and contains nonaggregated column '__test__.users.id' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by: SELECT id, AVG(score) FROM users GROUP BY name>
+#+END_SRC
