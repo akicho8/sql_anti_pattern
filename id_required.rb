@@ -43,7 +43,7 @@ tt Profile
 # >>    (0.0ms)  begin transaction
 # >>   SQL (0.1ms)  INSERT INTO "profiles" ("user_id") VALUES (?)  [["user_id", 1]]
 # >>    (0.0ms)  commit transaction
-# >>   User Load (0.0ms)  SELECT "users".* FROM "users"
+# >>   User Load (0.1ms)  SELECT "users".* FROM "users"
 # >> +----+
 # >> | id |
 # >> +----+
