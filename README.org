@@ -1,23 +1,24 @@
 * 一目で思い出すためのSQLアンチパターン覚え書き
 
-   | 名前                       | 何がダメか                   | 解決方法                   | 備考                         |
-   |----------------------------+------------------------------+----------------------------+------------------------------|
-   | 信号無視                   | 1つのカラムにIDを複数格納    | 中間テーブルを持つ         |                              |
-   | 複数列属性                 | カラムを連番で増やす         | 適切なリレーション         | xxx2 が出てきたら危険        |
-   | 闇雲インデックス           | すべてにインデックスを張る   | 絞る                       |                              |
-   | 幻のファイル               | カラムにファイルパスを格納   | blob                       |                              |
-   | 読み取り可能パスワード     | パスワードを格納             | ハッシュ化                 |                              |
-   | 31のフレーバー             | 限定する値を列定義(enum)     | 別テーブルで管理           |                              |
-   | ランダムセレクション       | order rand()                 | limit 1 offset rand(count) |                              |
-   | 丸め誤差                   | float                        | decimal                    | 緯度経度でありがち           |
-   | SQLインジェクション        | where("id = #{params[:id]}") | where(id: params[:id])     |                              |
-   | 疑似キー潔癖症             | 欠番を埋めたがる             | 埋めたがらない             |                              |
-   | 貧者のサーチエンジン       | like '%foo%'                 | FULLTEXT等                 |                              |
-   | 魔法の豆                   | モデルに書かない             | 書く                       |                              |
-   | typeにモデル名を入れるアレ | 整合性が揺らぐ・柔軟性がない | 使わない                   | 便利な面も多い               |
-   | 外部キー嫌い               | foreign_key: false           | foreign_key: true          | テストで困るけど使っていこう |
-   | メタデータ大増殖           | テーブルを連番にして増やす   | 増やさない                 |                              |
-   | 曖昧なグループ             | group by A で select B       | Bが必要な理由を考える      |                              |
+   | 名前                       | 何がダメか                   | 解決方法               | 備考                         |
+   |----------------------------+------------------------------+------------------------+------------------------------|
+   | 信号無視                   | 1つのカラムにIDを複数格納    | 中間テーブルを持つ     |                              |
+   | 複数列属性                 | カラムを連番で増やす         | 適切なリレーション     | xxx2 が出てきたら危険        |
+   | 闇雲インデックス           | インデックスを張りまくる     | 絞る                   |                              |
+   | 幻のファイル               | カラムにファイルパスを格納   | blob                   |                              |
+   | 読み取り可能パスワード     | パスワードを格納             | ハッシュ化             |                              |
+   | 31のフレーバー             | 限定する値を列定義(enum)     | 別テーブルで管理       |                              |
+   | ランダムセレクション       | order rand()                 | offset rand(count)     |                              |
+   | 丸め誤差                   | float                        | decimal                | 緯度経度でありがち           |
+   | SQLインジェクション        | where("id = #{params[:id]}") | where(id: params[:id]) |                              |
+   | 疑似キー潔癖症             | 欠番を埋めたがる             | 埋めたがらない         |                              |
+   | 貧者のサーチエンジン       | like '%foo%'                 | FULLTEXT等             |                              |
+   | 魔法の豆                   | モデルに書かない             | 書く                   |                              |
+   | typeにモデル名を入れるアレ | 整合性が揺らぐ・柔軟性がない | 使わない               | 便利な面も多い               |
+   | 外部キー嫌い               | foreign_key: false           | foreign_key: true      | テストで困るけど使っていこう |
+   | メタデータ大増殖           | テーブルを連番で増やす       | 増やさない             |                              |
+   | 曖昧なグループ             | group by A で select B       | Bが必要な理由を考える  |                              |
+   | スパゲッティクエリ         | 複雑すぎるSQL                | シンプルにする         | 設計から見直そう             |
 
    アンチパターンだと決め付けるのではなく一長一短を知ることが大切。
 
@@ -266,4 +267,32 @@ MySQL の場合はエラーにしてくれる。
 
 #+BEGIN_SRC ruby
 #<ActiveRecord::StatementInvalid: Mysql2::Error: Expression #1 of SELECT list is not in GROUP BY clause and contains nonaggregated column '__test__.users.id' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by: SELECT id, AVG(score) FROM users GROUP BY name>
+#+END_SRC
+
+** [[spaghetti_query.rb][スパゲッティクエリ]]
+
+   - 次のようにJOINの数に累乗して行が増えていくので気をつけろ
+   - 行数は COUNT ^ (JOIN数 + 1) で求められる
+   - 無理に一つにまとめようとすると破綻する
+   - なるべくシンプルにすること
+
+#+BEGIN_SRC ruby
+sql <<~EOT                      # => [{"COUNT(*)"=>2}]
+SELECT COUNT(*) FROM favorites
+EOT
+sql <<~EOT                      # => [{"COUNT(*)"=>4}]
+SELECT COUNT(*) FROM favorites
+LEFT JOIN favorites USING (user_id)
+EOT
+sql <<~EOT                      # => [{"COUNT(*)"=>8}]
+SELECT COUNT(*) FROM favorites
+LEFT JOIN favorites USING (user_id)
+LEFT JOIN favorites USING (user_id)
+EOT
+sql <<~EOT                      # => [{"COUNT(*)"=>16}]
+SELECT COUNT(*) FROM favorites
+LEFT JOIN favorites USING (user_id)
+LEFT JOIN favorites USING (user_id)
+LEFT JOIN favorites USING (user_id)
+EOT
 #+END_SRC
