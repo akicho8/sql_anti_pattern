@@ -19,6 +19,8 @@
    | メタデータ大増殖           | テーブルを連番で増やす       | 増やさない             |                              |
    | 曖昧なグループ             | group by A で select B       | Bが必要な理由を考える  |                              |
    | スパゲッティクエリ         | 複雑すぎるSQL                | シンプルにする         | 設計から見直そう             |
+   | 外交特権                   | SQL言語だけ特別扱いする      | しない                 | DB管理者ってなに？           |
+   | 臭いものに蓋               | エラーをないがしろにする     | しない                 |                              |
 
    アンチパターンだと決め付けるのではなく一長一短を知ることが大切。
 
@@ -205,7 +207,7 @@ tt Comment.all.collect(&:attributes)
 
 ** [[keyless_entry.rb][外部キー嫌い]]
 
-Article#user_id に意図しない値が入らないように心配するなら :foreign_key => true にしときましょうということ。
+Article#user_id に意図しない値が入らないように心配するなら foreign_key: true にしときましょうということ。
 
 #+BEGIN_SRC ruby
 create_table :articles do |t|
@@ -236,7 +238,7 @@ User.table_name = :users_2017
 User.create!                    # => #<User id: 1>
 #+END_SRC
 
-   速度が問題なら次のようにパーティション分割する。ただ ActiveRecord 経由でこの処理を書こうとすると大変。
+   速度が問題なら次のようにパーティション分割する。ただAR経由でこの処理を書こうとすると大変。
 
 #+BEGIN_SRC sql
 CREATE TABLE users (
@@ -271,10 +273,10 @@ MySQL の場合はエラーにしてくれる。
 
 ** [[spaghetti_query.rb][スパゲッティクエリ]]
 
-   - 次のようにJOINの数に累乗して行が増えていくので気をつけろ
-   - 行数は COUNT ^ (JOIN数 + 1) で求められる
-   - 無理に一つにまとめようとすると破綻する
-   - なるべくシンプルにすること
+   - JOINの数に累乗して行が増えていくので気をつけろ
+   - 行数は COUNT ^ (JOIN数 + 1) になる
+   - 無理に一つにまとめようとすると破綻
+   - なるべくシンプルに
 
 #+BEGIN_SRC ruby
 sql <<~EOT                      # => [{"COUNT(*)"=>2}]
@@ -295,4 +297,10 @@ LEFT JOIN favorites USING (user_id)
 LEFT JOIN favorites USING (user_id)
 LEFT JOIN favorites USING (user_id)
 EOT
+#+END_SRC
+
+** [[see_no_evil.rb][臭いものに蓋]]
+
+#+BEGIN_SRC ruby
+User.count rescue 0
 #+END_SRC
