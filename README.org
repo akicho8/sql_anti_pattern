@@ -119,7 +119,7 @@ id = "0 or name = 'admin'"
 User.where("id = #{id}").take # => #<User id: 2, name: "admin">
 #+END_SRC
 
-** [[pseudokey_neat_freak][疑似キー潔癖症]]
+** [[pseudokey_neat_freak.rb][疑似キー潔癖症]]
 
 #+BEGIN_SRC ruby
 User.pluck(:id)                 # => [2, 4]
