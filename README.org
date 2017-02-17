@@ -89,10 +89,12 @@ User.create!(:foo => "b") # => #<User id: 2, foo: "b">
 ** [[random_selection.rb][ランダムセレクション]]
 
 #+BEGIN_SRC ruby
-# NG
 User.order("random()").take
+#+END_SRC
 
-# GOOD
+   ↓
+
+#+BEGIN_SRC ruby
 User.offset(rand(User.count)).take
 #+END_SRC
 
@@ -121,15 +123,13 @@ User.where("id = #{id}").take # => #<User id: 2, name: "admin">
 
 ** [[pseudokey_neat_freak.rb][疑似キー潔癖症]]
 
+2 と 4 の間を埋めたがる
+
 #+BEGIN_SRC ruby
 User.pluck(:id)                 # => [2, 4]
-# 1から埋めるならもっと面倒なことになる
 sql = "SELECT id + 1 FROM users WHERE (id + 1) NOT IN (SELECT id FROM users) LIMIT 1"
-id = ActiveRecord::Base.connection.select_value(sql)
-id                              # => 3
-# INSERTでidが衝突するかもしれない
+id = ActiveRecord::Base.connection.select_value(sql) # => 3
 User.create!(:id => id)         # => #<User id: 3>
-User.pluck(:id)                 # => [2, 3, 4]
 #+END_SRC
 
 ** [[poor_mans_search_engine][貧者のサーチエンジン]]
@@ -140,7 +140,7 @@ Article.where(["body like ?", "%日本%"])
 
 ** [[magic_beans][魔法の豆]]
 
-user.rb が、これだけ。一方で users_controller.rb は1000行ある。
+user.rb がこれだけで一方の users_controller.rb は1000行ある。
 
 #+BEGIN_SRC ruby
 class User < ActiveRecord::Base
@@ -149,7 +149,7 @@ end
 
 ** [[id_required][とりあえずID]]
 
-Profile#user_id が一意であれば Profile#id は余計だろうという考えもあることを理解した。
+Railsの流儀からは逸れるが Profile#user_id が一意であれば Profile#id は余計だという考え方もあるようだ。
 
 #+BEGIN_SRC ruby
 create_table :profiles, :id => false do |t|
@@ -259,7 +259,8 @@ EXPLAIN PARTITIONS SELECT * FROM users;
 
 ** [[ambiguous_groups.rb][曖昧なグループ]]
 
-同じ name のレコードは複数あったかもしれないのに、どうして id が特定できたのか。MAX ではなく AVG を使って集約したと考えてみると、id が特定できた違和感を得やすい。
+同じ name のレコードは複数あったかもしれないのに、どうして id が特定できたのか。
+MAX ではなく AVG を使って集約したと考えてみると、id が特定できた違和感を得やすい。
 
 #+BEGIN_SRC ruby
 sql "SELECT id, AVG(score) FROM users GROUP BY name" # => [{"id"=>2, "AVG(score)"=>1.5}, {"id"=>4, "AVG(score)"=>3.5}]
