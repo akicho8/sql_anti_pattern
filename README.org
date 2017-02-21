@@ -23,6 +23,7 @@
    | [[https://github.com/akicho8/sql_anti_pattern#臭いものに蓋][臭いものに蓋]]                   | エラーをないがしろにする     | しない                     |                           |
    | [[https://github.com/akicho8/sql_anti_pattern#恐怖のUnknown][恐怖のUnknown]]                  | NULL許可                     | NOT NULL                   | NULL の代用で -1 とかダメ |
    | [[https://github.com/akicho8/sql_anti_pattern#素朴な木][素朴な木]]                       | 連携は parent_id だけ        | [[naive_trees_nested_set.rb][入れ子集合]]との併用がよさげ | 一長一短ある              |
+   | [[https://github.com/akicho8/sql_anti_pattern#暗黙の列][暗黙の列]]                       | SELECT *                     | 明示指定                   |                           |
    |--------------------------------+------------------------------+----------------------------+---------------------------|
 
    アンチパターンだと決め付けるのではなく一長一短を知ることが大切。
@@ -345,3 +346,11 @@ User.where.not(:age => -1).average(:age).to_i # => 20
 |------------+------------------+--------+--------------+------|
 
 「素朴な木」は兄妹や親へのアクセスなどがとてもやりやすいので、その利点は残しておいて、他の方法を考慮するなら、完全に移行するのではなく、併用がいい気がする。
+
+** [[implicit_columns.rb][暗黙の列]]
+
+#+BEGIN_SRC ruby
+Benchmark.ms { User.all.to_a         } # => 2.9799999902024865
+Benchmark.ms { User.select(:id).to_a } # => 0.4229999613016844
+Benchmark.ms { User.pluck(:id)       } # => 0.2049999893642962
+#+END_SRC
