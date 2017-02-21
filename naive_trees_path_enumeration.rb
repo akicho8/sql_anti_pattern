@@ -49,7 +49,7 @@ root = Comment.create!(:name => "root").tap do |n|
   end
 end
 
-tt Comment.all
+tt Comment
 puts TreeSupport.tree(root)
 
 # 1回のSQLで2に結びつくレコードを取得できる
