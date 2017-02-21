@@ -1,30 +1,30 @@
 * 一目で思い出すためのSQLアンチパターン覚え書き
 
-   | 名前                           | 何がダメか                   | 解決方法                   | 備考                      |
-   |--------------------------------+------------------------------+----------------------------+---------------------------|
-   | [[https://github.com/akicho8/sql_anti_pattern#信号無視][信号無視]]                       | 1つのカラムにIDを複数格納    | 中間テーブルを持つ         |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#複数列属性][複数列属性]]                     | カラムを連番で増やす         | 適切なリレーション         | xxx2 が出てきたら危険     |
-   | [[https://github.com/akicho8/sql_anti_pattern#闇雲インデックス][闇雲インデックス]]               | インデックスを張りまくる     | 絞る                       |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#幻のファイル][幻のファイル]]                   | カラムにファイルパスを格納   | blob                       |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#読み取り可能パスワード][読み取り可能パスワード]]         | パスワードを格納             | ハッシュ化                 |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#31のフレーバー][31のフレーバー]]                 | 限定する値を列定義(enum)     | 別テーブルで管理           |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#ランダムセレクション][ランダムセレクション]]           | order rand()                 | offset rand(count)         |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#丸め誤差][丸め誤差]]                       | float                        | decimal                    | 緯度経度でありがち        |
-   | [[https://github.com/akicho8/sql_anti_pattern#SQLインジェクション][SQLインジェクション]]            | where("id = #{params[:id]}") | where(id: params[:id])     |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#疑似キー潔癖症][疑似キー潔癖症]]                 | 欠番を埋めたがる             | 埋めたがらない             |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#貧者のサーチエンジン][貧者のサーチエンジン]]           | like '%foo%'                 | FULLTEXT等                 |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#魔法の豆][魔法の豆]]                       | モデルに書かない             | 書く                       |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#xxx_typeにモデル名を入れるアレ][xxx_typeにモデル名を入れるアレ]] | 整合性が揺らぐ・柔軟性がない | 使わない                   | 便利な面も多い            |
-   | [[https://github.com/akicho8/sql_anti_pattern#外部キー嫌い][外部キー嫌い]]                   | foreign_key: false           | foreign_key: true          | テストではまる要因        |
-   | [[https://github.com/akicho8/sql_anti_pattern#メタデータ大増殖][メタデータ大増殖]]               | テーブルを連番で増やす       | 増やさない                 |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#曖昧なグループ][曖昧なグループ]]                 | group by A で select B       | Bが必要な理由を考える      |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#スパゲッティクエリ][スパゲッティクエリ]]             | 複雑すぎるSQL                | シンプルにする             | 設計から見直そう          |
-   | [[https://github.com/akicho8/sql_anti_pattern#外交特権][外交特権]]                       | SQL言語だけ特別扱いする      | しない                     | DB管理者ってなに？        |
-   | [[https://github.com/akicho8/sql_anti_pattern#臭いものに蓋][臭いものに蓋]]                   | エラーをないがしろにする     | しない                     |                           |
-   | [[https://github.com/akicho8/sql_anti_pattern#恐怖のUnknown][恐怖のUnknown]]                  | NULL許可                     | NOT NULL                   | NULL の代用で -1 とかダメ |
-   | [[https://github.com/akicho8/sql_anti_pattern#素朴な木][素朴な木]]                       | 連携は parent_id だけ        | [[naive_trees_nested_set.rb][入れ子集合]]との併用がよさげ | 一長一短ある              |
-   | [[https://github.com/akicho8/sql_anti_pattern#暗黙の列][暗黙の列]]                       | SELECT *                     | 明示指定                   |                           |
-   |--------------------------------+------------------------------+----------------------------+---------------------------|
+   | 名前                   | 何がダメか                   | 解決方法                   | 備考                      |
+   |------------------------+------------------------------+----------------------------+---------------------------|
+   | [[https://github.com/akicho8/sql_anti_pattern#信号無視][信号無視]]               | 1つのカラムにIDを複数格納    | 中間テーブルを持つ         |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#複数列属性][複数列属性]]             | カラムを連番で増やす         | 適切なリレーション         | xxx2 が出てきたら危険     |
+   | [[https://github.com/akicho8/sql_anti_pattern#闇雲インデックス][闇雲インデックス]]       | インデックスを張りまくる     | 絞る                       |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#幻のファイル][幻のファイル]]           | カラムにファイルパスを格納   | blob                       |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#読み取り可能パスワード][読み取り可能パスワード]] | パスワードを格納             | ハッシュ化                 |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#31のフレーバー][31のフレーバー]]         | 限定する値を列定義(enum)     | 別テーブルで管理           |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#ランダムセレクション][ランダムセレクション]]   | order rand()                 | offset rand(count)         |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#丸め誤差][丸め誤差]]               | float                        | decimal                    | 緯度経度でありがち        |
+   | [[https://github.com/akicho8/sql_anti_pattern#sql%E3%82%A4%E3%83%B3%E3%82%B8%E3%82%A7%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3][SQLインジェクション]]    | where("id = #{params[:id]}") | where(id: params[:id])     |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#疑似キー潔癖症][疑似キー潔癖症]]         | 欠番を埋めたがる             | 埋めたがらない             |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#貧者のサーチエンジン][貧者のサーチエンジン]]   | like '%foo%'                 | FULLTEXT等                 |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#魔法の豆][魔法の豆]]               | モデルに書かない             | 書く                       |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#ポリモルフィック][ポリモルフィック]]       | 整合性が揺らぐ・柔軟性がない | 使わない                   | 便利な面も多い            |
+   | [[https://github.com/akicho8/sql_anti_pattern#外部キー嫌い][外部キー嫌い]]           | foreign_key: false           | foreign_key: true          | テストではまる要因        |
+   | [[https://github.com/akicho8/sql_anti_pattern#メタデータ大増殖][メタデータ大増殖]]       | テーブルを連番で増やす       | 増やさない                 |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#曖昧なグループ][曖昧なグループ]]         | group by A で select B       | Bが必要な理由を考える      |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#スパゲッティクエリ][スパゲッティクエリ]]     | 複雑すぎるSQL                | シンプルにする             | 設計から見直そう          |
+   | [[https://github.com/akicho8/sql_anti_pattern#外交特権][外交特権]]               | SQL言語だけ特別扱いする      | しない                     | DB管理者ってなに？        |
+   | [[https://github.com/akicho8/sql_anti_pattern#臭いものに蓋][臭いものに蓋]]           | エラーをないがしろにする     | しない                     |                           |
+   | [[https://github.com/akicho8/sql_anti_pattern#恐怖のUnknown][恐怖のUnknown]]          | NULL許可                     | NOT NULL                   | NULL の代用で -1 とかダメ |
+   | [[https://github.com/akicho8/sql_anti_pattern#素朴な木][素朴な木]]               | 連携は parent_id だけ        | [[naive_trees_nested_set.rb][入れ子集合]]との併用がよさげ | 一長一短ある              |
+   | [[https://github.com/akicho8/sql_anti_pattern#暗黙の列][暗黙の列]]               | SELECT *                     | 明示指定                   |                           |
+   |------------------------+------------------------------+----------------------------+---------------------------|
 
    アンチパターンだと決め付けるのではなく一長一短を知ることが大切。
 
@@ -169,7 +169,7 @@ user = User.create!                 # => #<User id: 1>
 user.create_profile!(:user => user) # => #<Profile user_id: 1>
 #+END_SRC
 
-** [[polymorphic_associations][xxx_typeにモデル名を入れるアレ]]
+** [[polymorphic_associations][ポリモルフィック]]
 
 #+BEGIN_SRC ruby
 create_table :users do |t|
