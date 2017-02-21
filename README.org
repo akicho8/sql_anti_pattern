@@ -140,7 +140,7 @@ Article.where(["body like ?", "%日本%"])
 
 ** [[magic_beans][魔法の豆]]
 
-user.rb がこれだけで一方の users_controller.rb は1000行ある。
+user.rb がこれだけ！
 
 #+BEGIN_SRC ruby
 class User < ActiveRecord::Base
