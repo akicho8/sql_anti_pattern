@@ -7,7 +7,7 @@
    | [[https://github.com/akicho8/sql_anti_pattern#闇雲インデックス][闇雲インデックス]]       | インデックスを張りまくる     | 絞る                       |                       |
    | [[https://github.com/akicho8/sql_anti_pattern#幻のファイル][幻のファイル]]           | カラムにファイルパスを格納   | BLOB型の検討               |                       |
    | [[https://github.com/akicho8/sql_anti_pattern#読み取り可能パスワード][読み取り可能パスワード]] | パスワードを格納             | ハッシュ化                 |                       |
-   | [[https://github.com/akicho8/sql_anti_pattern#31のフレーバー][31のフレーバー]]         | 限定する値を列定義(enum)     | 別テーブルで管理           |                       |
+   | [[https://github.com/akicho8/sql_anti_pattern#31のフレーバー][31のフレーバー]]         | enum                         | 別テーブルで管理           |                       |
    | [[https://github.com/akicho8/sql_anti_pattern#ランダムセレクション][ランダムセレクション]]   | order rand()                 | offset rand(count)         |                       |
    | [[https://github.com/akicho8/sql_anti_pattern#丸め誤差][丸め誤差]]               | float                        | decimal                    | 緯度経度でありがち    |
    | [[https://github.com/akicho8/sql_anti_pattern#sql%E3%82%A4%E3%83%B3%E3%82%B8%E3%82%A7%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3][SQLインジェクション]]    | where("id = #{params[:id]}") | where(id: params[:id])     |                       |
@@ -332,7 +332,6 @@ User.where.not(:age => -1).average(:age).to_i # => 20
 #+END_SRC
 
 余計に面倒なことになっている。
-
 そしてしばらくして疑問に思う。-1って何だろうと。
 
 ** 素朴な木
@@ -359,7 +358,7 @@ Benchmark.ms { User.pluck(:id)       } # => 0.2049999893642962
 ** Entity-Attribute-Value
 
 |----------------------+---------------------------------+--------------------------+-----------------------------------------------------------------+--------+------------------|
-| 名前                 | 仕組み                          | 利点                     | 欠点                                                            | 複雑度 | 対象数           |
+| 名前                 | 仕組み                          | 利点                     | 欠点                                                            | 複雑度 | 対象数(種類)     |
 |----------------------+---------------------------------+--------------------------+-----------------------------------------------------------------+--------+------------------|
 | [[entity_attribute_value.rb][EAV]]                  | テーブル1つ。キーと値でがんばる | 列が増えない。検索が楽。 | 値用のカラム1つを汎用的に使うのに無理がでてくる。融通が効かない |      1 | 多い             |
 | [[entity_attribute_value_STI.rb][STI]]                  | 結局テーブルは1つ。モデルを活用 |                          | 無駄なNULLカラムだらけになる。列を増やしたくなくなってくる      |      2 | 数えられるぐらい |
