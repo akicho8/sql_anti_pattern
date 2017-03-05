@@ -7,7 +7,7 @@
    | [[https://github.com/akicho8/sql_anti_pattern#闇雲インデックス][闇雲インデックス]]       | インデックスを張りまくる     | 絞る                       |                       |
    | [[https://github.com/akicho8/sql_anti_pattern#幻のファイル][幻のファイル]]           | カラムにファイルパスを格納   | BLOB型の検討               |                       |
    | [[https://github.com/akicho8/sql_anti_pattern#読み取り可能パスワード][読み取り可能パスワード]] | パスワードを格納             | ハッシュ化                 |                       |
-   | [[https://github.com/akicho8/sql_anti_pattern#31のフレーバー][31のフレーバー]]         | enum                         | 別テーブルで管理           |                       |
+   | [[https://github.com/akicho8/sql_anti_pattern#31のフレーバー][31のフレーバー]]         | 限定する値をENUMで定義       | 別テーブルで管理           |                       |
    | [[https://github.com/akicho8/sql_anti_pattern#ランダムセレクション][ランダムセレクション]]   | order rand()                 | offset rand(count)         |                       |
    | [[https://github.com/akicho8/sql_anti_pattern#丸め誤差][丸め誤差]]               | float                        | decimal                    | 緯度経度でありがち    |
    | [[https://github.com/akicho8/sql_anti_pattern#sql%E3%82%A4%E3%83%B3%E3%82%B8%E3%82%A7%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3][SQLインジェクション]]    | where("id = #{params[:id]}") | where(id: params[:id])     |                       |
@@ -331,8 +331,8 @@ User.average(:age).to_i                       # => 9
 User.where.not(:age => -1).average(:age).to_i # => 20
 #+END_SRC
 
-余計に面倒なことになっている。
-そしてしばらくして疑問に思う。-1って何だろうと。
+- 余計に面倒なことになっている。
+- そしてしばらくして疑問に思う。-1って何だろうと。
 
 ** 素朴な木
 
@@ -354,6 +354,8 @@ Benchmark.ms { User.all.to_a         } # => 2.9799999902024865
 Benchmark.ms { User.select(:id).to_a } # => 0.4229999613016844
 Benchmark.ms { User.pluck(:id)       } # => 0.2049999893642962
 #+END_SRC
+
+- 効果がある場合のみカラム指定で最適化するべき。
 
 ** Entity-Attribute-Value
 
