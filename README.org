@@ -198,7 +198,7 @@ comment.comments.create!        # => #<Comment id: 2, commentable_type: "Comment
 comment = user.comments.create! # => #<Comment id: 3, commentable_type: "User", commentable_id: 1>
 comment.comments.create!        # => #<Comment id: 4, commentable_type: "Comment", commentable_id: 3>
 
-tt Comment
+tp Comment
 # >> +----+------------------+----------------+
 # >> | id | commentable_type | commentable_id |
 # >> +----+------------------+----------------+

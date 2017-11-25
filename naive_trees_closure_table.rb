@@ -6,9 +6,7 @@
 require "bundler/setup"
 require "tree_support"
 require "active_record"
-require "rain_table"
-
-ActiveRecord::Base.include(RainTable::ActiveRecord)
+require "org_tp"
 
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
 ActiveRecord::Migration.verbose = false
@@ -95,7 +93,7 @@ Comment["A"].tap do |a|
 end
 
 # 全体
-tt Ship.all.collect {|e| {"親" => e.ancestor.name, "子" => e.descendant.name} }
+tp Ship.all.collect {|e| {"親" => e.ancestor.name, "子" => e.descendant.name} }
 # Aの子孫
 Comment["A"].all_children.collect(&:name).join        # => "BCD"
 # Dの祖先
@@ -122,9 +120,9 @@ Comment["E"].parent&.name                 # => "B"
 
 # children が「子孫」なので木がおかしい
 puts TreeSupport.tree(Comment["A"])
-# >> +----+----+
+# >> |----+----|
 # >> | 親 | 子 |
-# >> +----+----+
+# >> |----+----|
 # >> | A  | A  |
 # >> | A  | B  |
 # >> | B  | B  |
@@ -133,7 +131,7 @@ puts TreeSupport.tree(Comment["A"])
 # >> | A  | D  |
 # >> | B  | D  |
 # >> | D  | D  |
-# >> +----+----+
+# >> |----+----|
 # >> A
 # >> ├─B
 # >> │   ├─D

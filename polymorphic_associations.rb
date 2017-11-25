@@ -1,7 +1,6 @@
 require "active_record"
-require "rain_table"
+require "org_tp"
 
-ActiveRecord::Base.include(RainTable::ActiveRecord)
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
 ActiveRecord::Migration.verbose = false
 ActiveRecord::Schema.define do
@@ -28,12 +27,12 @@ comment.comments.create!        # => #<Comment id: 2, commentable_type: "Comment
 comment = user.comments.create! # => #<Comment id: 3, commentable_type: "User", commentable_id: 1>
 comment.comments.create!        # => #<Comment id: 4, commentable_type: "Comment", commentable_id: 3>
 
-tt Comment
-# >> +----+------------------+----------------+
+tp Comment
+# >> |----+------------------+----------------|
 # >> | id | commentable_type | commentable_id |
-# >> +----+------------------+----------------+
+# >> |----+------------------+----------------|
 # >> |  1 | User             |              1 |
 # >> |  2 | Comment          |              1 |
 # >> |  3 | User             |              1 |
 # >> |  4 | Comment          |              3 |
-# >> +----+------------------+----------------+
+# >> |----+------------------+----------------|

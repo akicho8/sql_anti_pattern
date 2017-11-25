@@ -1,6 +1,5 @@
 require "active_record"
-require "rain_table"
-ActiveRecord::Base.include(RainTable::ActiveRecord)
+require "org_tp"
 
 logger = ActiveSupport::Logger.new(STDOUT)
 ActiveRecord::Base.logger = logger
@@ -34,24 +33,24 @@ end
 user = User.create!                 # => #<User id: 1>
 user.create_profile!(:user => user) # => #<Profile user_id: 1>
 
-tt User
-tt Profile
+tp User
+tp Profile
 
 # >>    (0.0ms)  begin transaction
-# >>   SQL (0.0ms)  INSERT INTO "users" DEFAULT VALUES
+# >>   SQL (0.1ms)  INSERT INTO "users" DEFAULT VALUES
 # >>    (0.0ms)  commit transaction
 # >>    (0.0ms)  begin transaction
 # >>   SQL (0.1ms)  INSERT INTO "profiles" ("user_id") VALUES (?)  [["user_id", 1]]
 # >>    (0.0ms)  commit transaction
 # >>   User Load (0.1ms)  SELECT "users".* FROM "users"
-# >> +----+
+# >> |----|
 # >> | id |
-# >> +----+
+# >> |----|
 # >> |  1 |
-# >> +----+
-# >>   Profile Load (0.0ms)  SELECT "profiles".* FROM "profiles"
-# >> +---------+
+# >> |----|
+# >>   Profile Load (0.1ms)  SELECT "profiles".* FROM "profiles"
+# >> |---------|
 # >> | user_id |
-# >> +---------+
+# >> |---------|
 # >> |       1 |
-# >> +---------+
+# >> |---------|

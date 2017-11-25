@@ -3,9 +3,7 @@
 require "bundler/setup"
 require "tree_support"
 require "active_record"
-require "rain_table"
-
-ActiveRecord::Base.include(RainTable::ActiveRecord)
+require "org_tp"
 
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
 ActiveRecord::Migration.verbose = false
@@ -49,14 +47,14 @@ root = Comment.create!(:name => "root").tap do |n|
   end
 end
 
-tt Comment
+tp Comment
 puts TreeSupport.tree(root)
 
 # 1回のSQLで2に結びつくレコードを取得できる
-tt Comment.where(["path like ?", "1/2/%"])
-# >> +----+-----------+------+----------+
+tp Comment.where(["path like ?", "1/2/%"])
+# >> |----+-----------+------+----------|
 # >> | id | parent_id | name | path     |
-# >> +----+-----------+------+----------+
+# >> |----+-----------+------+----------|
 # >> |  1 |           | root | 1/       |
 # >> |  2 |         1 | a    | 1/2/     |
 # >> |  3 |         2 | a1   | 1/2/3/   |
@@ -64,7 +62,7 @@ tt Comment.where(["path like ?", "1/2/%"])
 # >> |  5 |         1 | b    | 1/5/     |
 # >> |  6 |         5 | b1   | 1/5/6/   |
 # >> |  7 |         6 | b2   | 1/5/6/7/ |
-# >> +----+-----------+------+----------+
+# >> |----+-----------+------+----------|
 # >> root
 # >> ├─a
 # >> │   └─a1
@@ -72,10 +70,10 @@ tt Comment.where(["path like ?", "1/2/%"])
 # >> └─b
 # >>     └─b1
 # >>         └─b2
-# >> +----+-----------+------+----------+
+# >> |----+-----------+------+----------|
 # >> | id | parent_id | name | path     |
-# >> +----+-----------+------+----------+
+# >> |----+-----------+------+----------|
 # >> |  2 |         1 | a    | 1/2/     |
 # >> |  3 |         2 | a1   | 1/2/3/   |
 # >> |  4 |         3 | a2   | 1/2/3/4/ |
-# >> +----+-----------+------+----------+
+# >> |----+-----------+------+----------|
