@@ -44,10 +44,10 @@ user.friends_ids # => "2,3"
 ** [[multi_column_attribute.rb][複数列属性]]
 
 #+BEGIN_SRC ruby
-create_table :articles do |t|
-  t.string :comment1
-  t.string :comment2
-  t.string :comment3
+create_table :users do |t|
+  t.string :avatar1
+  t.string :avatar2
+  t.string :avatar3
 end
 #+END_SRC
 
@@ -66,7 +66,7 @@ end
 
 #+BEGIN_SRC ruby
 user = User.create!(:file_path => "path/to/file.png")
-Pathname(user.file_path).exist? # => false
+File.exist?(user.file_path) # => false
 #+END_SRC
 
 ** [[readable_passwords.rb][読み取り可能パスワード]]
@@ -147,6 +147,9 @@ user.rb がこれだけ！
 class User < ActiveRecord::Base
 end
 #+END_SRC
+
+リレーション以外のことを意地でも書かない。
+一方、コントローラーやヘルパーは肥大でサービスクラスなどを別に作り始める。
 
 ** [[id_required][とりあえずID]]
 

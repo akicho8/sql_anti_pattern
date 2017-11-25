@@ -4,18 +4,18 @@ ActiveRecord::Migration.verbose = false
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
 
 ActiveRecord::Schema.define do
-  create_table :articles do |t|
-    t.string :comment1
-    t.string :comment2
-    t.string :comment3
+  create_table :users do |t|
+    t.string :avatar1
+    t.string :avatar2
+    t.string :avatar3
   end
 end
 
-class Article < ActiveRecord::Base
-  def comments
-    [comment1, comment2, comment3].compact
+class User < ActiveRecord::Base
+  def avatars
+    [avatar1, avatar2, avatar3].compact
   end
 end
 
-article = Article.create!(:comment1 => "a", :comment3 => "c")
-article.comments                # => ["a", "c"]
+user = User.create!(:avatar1 => "a", :avatar3 => "c")
+user.avatars                # => ["a", "c"]

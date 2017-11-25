@@ -13,4 +13,4 @@ class User < ActiveRecord::Base
 end
 
 user = User.create!(:file_path => "path/to/file.png")
-Pathname(user.file_path).exist? # => false
+File.exist?(user.file_path) # => false
